@@ -87,12 +87,17 @@ int main(int argc, char *argv[])
 
     pthread_setconcurrency(THREAD_NUM + 1);
 
-    pthread_t *threadId = (pthread_t *) malloc(sizeof(pthread_t) * THREAD_NUM);
+//    pthread_t *threadId = (pthread_t *) malloc(sizeof(pthread_t) * THREAD_NUM);
     append_a **app = (append_a **) malloc(sizeof(append_a *) * THREAD_NUM);
+#if defined(COL)
     for (int i = 0; i < THREAD_NUM; i++)
         app[i] = new_append_a(map + MAX_LAST_NAME_SIZE * i, map + fileOffset, i,
                               THREAD_NUM, entry_pool + i);
-
+#elif defined (ROW)  
+    for (int i = 0; i < THREAD_NUM; i++)
+        app[i] = new_append_a(map + MAX_LAST_NAME_SIZE * i * (int) ((fileOffset/MAX_LAST_NAME_SIZE)/THREAD_NUM), map + MAX_LAST_NAME_SIZE * (i+1) *(int) ((fileOffset/MAX_LAST_NAME_SIZE)/THREAD_NUM), i,
+                              THREAD_NUM, entry_pool + i *(int) ((fileOffset/MAX_LAST_NAME_SIZE)/THREAD_NUM));
+#endif 
     clock_gettime(CLOCK_REALTIME, &mid);
     /*
         for (int i = 0; i < THREAD_NUM; i++)
@@ -170,8 +175,10 @@ int main(int argc, char *argv[])
     cpu_time2 = diff_in_second(start, end);
 
     FILE *output;
-#if defined(OPT)
-    output = fopen("opt.txt", "a");
+#if defined(ROW)
+    output = fopen("row.txt", "a");
+#elif defined(COL)
+    output = fopen("col.txt", "a");
 #else
     output = fopen("orig.txt", "a");
 #endif
@@ -186,7 +193,7 @@ int main(int argc, char *argv[])
     free(pHead);
 #else
     free(entry_pool);
-    free(threadId);
+//    free(threadId);
     free(app);
     munmap(map, fileOffset);
 #endif

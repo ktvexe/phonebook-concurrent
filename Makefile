@@ -12,7 +12,7 @@ ifeq ($(strip $(DEBUG)),1)
 CFLAGS_opt += -DDEBUG -g
 endif
 
-EXEC = phonebook_orig phonebook_opt 
+EXEC = phonebook_orig phonebook_opt_row phonebook_opt_col 
 all: $(EXEC)
 
 SRCS_common = main.c
@@ -28,10 +28,15 @@ phonebook_orig: $(SRCS_common) phonebook_orig.c phonebook_orig.h
 		-DIMPL="\"$@.h\"" -o $@ \
 		$(SRCS_common) $@.c
 
-phonebook_opt: $(SRCS_common) phonebook_opt.c phonebook_opt.h threadpool.h 
+phonebook_opt_row: $(SRCS_common) phonebook_opt.c phonebook_opt.h threadpool.h 
 	$(CC) $(CFLAGS_common) $(CFLAGS_opt) \
-		-DIMPL="\"$@.h\"" -o $@ \
-		$(SRCS_common) $@.c threadpool.c
+		-DIMPL="\"phonebook_opt.h\"" -DROW -o $@ \
+		$(SRCS_common) phonebook_opt.c threadpool.c
+
+phonebook_opt_col: $(SRCS_common) phonebook_opt.c phonebook_opt.h threadpool.h 
+	$(CC) $(CFLAGS_common) $(CFLAGS_opt) \
+		-DIMPL="\"phonebook_opt.h\"" -DCOL -o $@ \
+		$(SRCS_common) phonebook_opt.c threadpool.c
 
 run: $(EXEC)
 	echo 3 | sudo tee /proc/sys/vm/drop_caches
@@ -43,7 +48,10 @@ cache-test: $(EXEC)
 		./phonebook_orig
 	perf stat --repeat 100 \
 		-e cache-misses,cache-references,instructions,cycles \
-		./phonebook_opt
+		./phonebook_opt_row
+	perf stat --repeat 100 \
+		-e cache-misses,cache-references,instructions,cycles \
+		./phonebook_opt_col
 
 output.txt: cache-test calculate
 	./calculate
@@ -57,4 +65,4 @@ calculate: calculate.c
 .PHONY: clean
 clean:
 	$(RM) $(EXEC) *.o perf.* \
-	      	calculate orig.txt opt.txt output.txt runtime.png file_align align.txt new.txt sort.txt
+	      	calculate orig.txt row.txt col.txt output.txt runtime.png file_align align.txt new.txt sort.txt

@@ -26,7 +26,7 @@ entry *findName(char lastname[], entry *pHead)
     return NULL;
 }
 
-append_a *new_append_a(char *ptr, char *ptrEnd, int threadId, int ntd,
+append_a *new_append_a(char *ptr, char *ptrEnd, int threadId, int threadNum,
                        entry *start)
 {
     append_a *app = (append_a *) malloc(sizeof(append_a));
@@ -34,7 +34,7 @@ append_a *new_append_a(char *ptr, char *ptrEnd, int threadId, int ntd,
     app->ptr = ptr;
     app->ptrEnd = ptrEnd;
     app->threadId = threadId;
-    app->threadNum = ntd;
+    app->threadNum = threadNum;
     app->entryStart = start;
 
     app->pHead = (app->pLast = app->entryStart);
@@ -43,18 +43,20 @@ append_a *new_append_a(char *ptr, char *ptrEnd, int threadId, int ntd,
 
 void append(void *arg)
 {
-    struct timespec start, end;
-    double cpu_time;
+    //struct timespec start, end;
+//    double cpu_time;
 
-    clock_gettime(CLOCK_REALTIME, &start);
+//    clock_gettime(CLOCK_REALTIME, &start);
 
     append_a *app = (append_a *) arg;
 
-    int count = 0;
+    //int count = 0;
+#if defined (ROW)
     entry *j = app->entryStart;
+
     for (char *i = app->ptr; i < app->ptrEnd;
-            i += MAX_LAST_NAME_SIZE * app->threadNum,
-            j += app->threadNum,count++) {
+            i += MAX_LAST_NAME_SIZE ,
+            j += 1) {
         app->pLast->pNext = j;
         app->pLast = app->pLast->pNext;
 
@@ -63,10 +65,25 @@ void append(void *arg)
                 app->threadId, app->pLast->lastName);
         app->pLast->pNext = NULL;
     }
-    clock_gettime(CLOCK_REALTIME, &end);
-    cpu_time = diff_in_second(start, end);
+#elif defined (COL)
+     
+    entry *j = app->entryStart;
+    for (char *i = app->ptr; i < app->ptrEnd;
+            i += MAX_LAST_NAME_SIZE * app->threadNum,
+            j += app->threadNum) {
+        app->pLast->pNext = j;
+        app->pLast = app->pLast->pNext;
 
-    dprintf("thread take %lf sec, count %d\n", cpu_time, count);
+        app->pLast->lastName = i;
+        dprintf("thread %d append string = %s\n",
+                app->threadId, app->pLast->lastName);
+        app->pLast->pNext = NULL;
+    }
+#endif   
+//    clock_gettime(CLOCK_REALTIME, &end);
+//    cpu_time = diff_in_second(start, end);
+
+//    dprintf("thread take %lf sec, count %d\n", cpu_time, count);
 
     pthread_exit(NULL);
 }
