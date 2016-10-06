@@ -93,11 +93,11 @@ int main(int argc, char *argv[])
     for (int i = 0; i < THREAD_NUM; i++)
         app[i] = new_append_a(map + MAX_LAST_NAME_SIZE * i, map + fileOffset, i,
                               THREAD_NUM, entry_pool + i);
-#elif defined (ROW)  
+#elif defined (ROW)
     for (int i = 0; i < THREAD_NUM; i++)
         app[i] = new_append_a(map + MAX_LAST_NAME_SIZE * i * (int) ((fileOffset/MAX_LAST_NAME_SIZE)/THREAD_NUM), map + MAX_LAST_NAME_SIZE * (i+1) *(int) ((fileOffset/MAX_LAST_NAME_SIZE)/THREAD_NUM), i,
                               THREAD_NUM, entry_pool + i *(int) ((fileOffset/MAX_LAST_NAME_SIZE)/THREAD_NUM));
-#endif 
+#endif
     clock_gettime(CLOCK_REALTIME, &mid);
     /*
         for (int i = 0; i < THREAD_NUM; i++)

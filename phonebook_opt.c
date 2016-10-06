@@ -66,7 +66,7 @@ void append(void *arg)
         app->pLast->pNext = NULL;
     }
 #elif defined (COL)
-     
+
     entry *j = app->entryStart;
     for (char *i = app->ptr; i < app->ptrEnd;
             i += MAX_LAST_NAME_SIZE * app->threadNum,
@@ -79,7 +79,7 @@ void append(void *arg)
                 app->threadId, app->pLast->lastName);
         app->pLast->pNext = NULL;
     }
-#endif   
+#endif
 //    clock_gettime(CLOCK_REALTIME, &end);
 //    cpu_time = diff_in_second(start, end);
 
