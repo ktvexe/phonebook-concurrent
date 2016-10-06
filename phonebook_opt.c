@@ -26,15 +26,15 @@ entry *findName(char lastname[], entry *pHead)
     return NULL;
 }
 
-append_a *new_append_a(char *ptr, char *eptr, int tid, int ntd,
+append_a *new_append_a(char *ptr, char *ptrEnd, int threadId, int ntd,
                        entry *start)
 {
     append_a *app = (append_a *) malloc(sizeof(append_a));
 
     app->ptr = ptr;
-    app->eptr = eptr;
-    app->tid = tid;
-    app->nthread = ntd;
+    app->ptrEnd = ptrEnd;
+    app->threadId = threadId;
+    app->threadNum = ntd;
     app->entryStart = start;
 
     app->pHead = (app->pLast = app->entryStart);
@@ -52,15 +52,15 @@ void append(void *arg)
 
     int count = 0;
     entry *j = app->entryStart;
-    for (char *i = app->ptr; i < app->eptr;
-            i += MAX_LAST_NAME_SIZE * app->nthread,
-            j += app->nthread,count++) {
+    for (char *i = app->ptr; i < app->ptrEnd;
+            i += MAX_LAST_NAME_SIZE * app->threadNum,
+            j += app->threadNum,count++) {
         app->pLast->pNext = j;
         app->pLast = app->pLast->pNext;
 
         app->pLast->lastName = i;
         dprintf("thread %d append string = %s\n",
-                app->tid, app->pLast->lastName);
+                app->threadId, app->pLast->lastName);
         app->pLast->pNext = NULL;
     }
     clock_gettime(CLOCK_REALTIME, &end);
@@ -73,8 +73,10 @@ void append(void *arg)
 
 void show_entry(entry *pHead)
 {
+    FILE *newfptr;
+    newfptr=fopen("new.txt","w");
     while (pHead != NULL) {
-        printf("lastName = %s\n", pHead->lastName);
+        fprintf(newfptr,"%s", pHead->lastName);
         pHead = pHead->pNext;
     }
 }

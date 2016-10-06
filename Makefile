@@ -2,6 +2,7 @@ CC ?= gcc
 CFLAGS_common ?= -Wall -std=gnu99
 CFLAGS_orig = -O0
 CFLAGS_opt  = -O0 -pthread -g -pg
+CFLAGS_pool  = -pthread -g
 
 ifdef THREAD
 CFLAGS_opt  += -D THREAD_NUM=${THREAD}
@@ -11,7 +12,7 @@ ifeq ($(strip $(DEBUG)),1)
 CFLAGS_opt += -DDEBUG -g
 endif
 
-EXEC = phonebook_orig phonebook_opt
+EXEC = phonebook_orig phonebook_opt 
 all: $(EXEC)
 
 SRCS_common = main.c
@@ -19,15 +20,18 @@ SRCS_common = main.c
 file_align: file_align.c
 	$(CC) $(CFLAGS_common) $^ -o $@
 
+threadpool: threadpool.c threadpool.h
+	$(CC) $(CFLAGS_common) $(CFLAGS_pool) $@.c $@
+
 phonebook_orig: $(SRCS_common) phonebook_orig.c phonebook_orig.h
 	$(CC) $(CFLAGS_common) $(CFLAGS_orig) \
 		-DIMPL="\"$@.h\"" -o $@ \
 		$(SRCS_common) $@.c
 
-phonebook_opt: $(SRCS_common) phonebook_opt.c phonebook_opt.h
+phonebook_opt: $(SRCS_common) phonebook_opt.c phonebook_opt.h threadpool.h 
 	$(CC) $(CFLAGS_common) $(CFLAGS_opt) \
 		-DIMPL="\"$@.h\"" -o $@ \
-		$(SRCS_common) $@.c
+		$(SRCS_common) $@.c threadpool.c
 
 run: $(EXEC)
 	echo 3 | sudo tee /proc/sys/vm/drop_caches
@@ -53,4 +57,4 @@ calculate: calculate.c
 .PHONY: clean
 clean:
 	$(RM) $(EXEC) *.o perf.* \
-	      	calculate orig.txt opt.txt output.txt runtime.png file_align align.txt
+	      	calculate orig.txt opt.txt output.txt runtime.png file_align align.txt new.txt sort.txt

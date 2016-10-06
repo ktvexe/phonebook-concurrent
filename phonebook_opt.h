@@ -32,15 +32,15 @@ entry *findName(char lastname[], entry *pHead);
 
 typedef struct _append_a {
     char *ptr;
-    char *eptr;
-    int tid;
-    int nthread;
+    char *ptrEnd;
+    int threadId;
+    int threadNum;
     entry *entryStart;
     entry *pHead;
     entry *pLast;
 } append_a;
 
-append_a *new_append_a(char *ptr, char *eptr, int tid, int ntd, entry *start);
+append_a *new_append_a(char *ptr, char *ptrEnd, int threadId, int ntd, entry *start);
 
 void append(void *arg);
 
